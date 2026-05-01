@@ -9,7 +9,7 @@ import Test from './pages/Test.jsx'
 export default function App() {
   return (
     <HistoryProvider>
-      <BrowserRouter basename="/suivi-taches">
+      <BrowserRouter basename="/tache-app">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/nathys" element={<Nathys />} />

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/suivi-taches/',
+  base: '/tache-app/',
   build: {
     rollupOptions: {
       output: {
