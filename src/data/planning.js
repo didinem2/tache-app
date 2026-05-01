@@ -62,6 +62,40 @@ export function tachesHebdoTest(semaine) {
   ]
 }
 
+// Mois disponibles dans le planning
+export const MOIS_NOMS = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
+
+export const MOIS_PLANNING = [
+  { mois: 5, annee: 2025 },
+  { mois: 6, annee: 2025 },
+]
+
+// Rattachement de chaque semaine à son mois (basé sur la date de début)
+export const SEMAINE_MOIS = {
+  19: { mois: 5, annee: 2025 },
+  20: { mois: 5, annee: 2025 },
+  21: { mois: 5, annee: 2025 },
+  22: { mois: 5, annee: 2025 },
+  23: { mois: 6, annee: 2025 },
+  24: { mois: 6, annee: 2025 },
+  25: { mois: 6, annee: 2025 },
+  26: { mois: 6, annee: 2025 },
+  27: { mois: 6, annee: 2025 },
+}
+
+export function getWeeksForMonth(mois, annee) {
+  return SEMAINES.filter(s =>
+    SEMAINE_MOIS[s]?.mois === mois && SEMAINE_MOIS[s]?.annee === annee
+  )
+}
+
+export function moisSuivantLabel(mois, annee) {
+  return mois === 12
+    ? `Janvier ${annee + 1}`
+    : `${MOIS_NOMS[mois + 1]} ${mois === 12 ? annee + 1 : annee}`
+}
+
 // Calendrier de référence S19-S27 2025
 export const CALENDRIER = {
   19: '5 – 11 mai 2025',

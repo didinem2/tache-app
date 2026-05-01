@@ -221,6 +221,48 @@ body {
 .monthly-summary h4 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 0.5rem; }
 .monthly-summary p { margin-bottom: 0.25rem; }
 
+/* Month navigation */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+}
+.month-nav-label { font-size: 1rem; font-weight: 600; min-width: 140px; text-align: center; }
+.month-nav-btn {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.month-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* Recap sections */
+.recap-section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.mensuel-line { margin: 0.75rem 0 0.5rem; font-size: 0.9rem; }
+
+.argent-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.argent-label input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: #16a34a; cursor: pointer; }
+.argent-date { font-size: 0.8rem; color: var(--muted); }
+
 /* Filters */
 .filters {
   display: flex;

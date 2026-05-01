@@ -92,12 +92,43 @@ export function HistoryProvider({ children }) {
     await batch.commit()
   }
 
+  function isArgentDonne(user, mois, annee) {
+    return history.some(h =>
+      h.user === user && h.type === 'argent_donne' &&
+      h.mois === mois && h.annee === annee
+    )
+  }
+
+  function getArgentDonneLe(user, mois, annee) {
+    const entry = history.find(h =>
+      h.user === user && h.type === 'argent_donne' &&
+      h.mois === mois && h.annee === annee
+    )
+    return entry?.donneLe ?? null
+  }
+
+  async function toggleArgentDonne(user, mois, annee, checked) {
+    const existing = history.find(h =>
+      h.user === user && h.type === 'argent_donne' &&
+      h.mois === mois && h.annee === annee
+    )
+    if (checked && !existing) {
+      await addDoc(collection(db, 'history'), {
+        user, type: 'argent_donne', mois, annee,
+        donneLe: new Date().toISOString(),
+      })
+    } else if (!checked && existing) {
+      await deleteDoc(doc(db, 'history', existing.id))
+    }
+  }
+
   return (
     <HistoryContext.Provider value={{
       history, loading,
       isHebdoChecked, isMensuelChecked,
       toggleHebdo, toggleMensuel,
       clearWeek, clearUser,
+      isArgentDonne, getArgentDonneLe, toggleArgentDonne,
     }}>
       {children}
     </HistoryContext.Provider>
