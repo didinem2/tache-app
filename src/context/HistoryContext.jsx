@@ -3,7 +3,6 @@ import {
   collection, doc, onSnapshot,
   addDoc, deleteDoc, writeBatch,
 } from 'firebase/firestore'
-import { getMonth, getYear } from 'date-fns'
 import { db } from '../firebase.js'
 
 const HistoryContext = createContext(null)
@@ -29,9 +28,7 @@ export function HistoryProvider({ children }) {
     )
   }
 
-  function isMensuelChecked(user, taskId) {
-    const mois = getMonth(new Date()) + 1
-    const annee = getYear(new Date())
+  function isMensuelChecked(user, taskId, mois, annee) {
     return history.some(h =>
       h.user === user && h.task === taskId && h.type === 'mensuel' &&
       h.mois === mois && h.annee === annee && h.completed
@@ -57,9 +54,7 @@ export function HistoryProvider({ children }) {
     }
   }
 
-  async function toggleMensuel(user, taskId, checked) {
-    const mois = getMonth(new Date()) + 1
-    const annee = getYear(new Date())
+  async function toggleMensuel(user, taskId, checked, mois, annee) {
     const existing = history.find(h =>
       h.user === user && h.task === taskId && h.type === 'mensuel' &&
       h.mois === mois && h.annee === annee

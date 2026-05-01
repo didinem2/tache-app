@@ -1,11 +1,10 @@
 import { useNavigate } from 'react-router-dom'
-import { getMonth, getYear } from 'date-fns'
 import TaskList from '../components/TaskList.jsx'
 import MonthlySummary from '../components/MonthlySummary.jsx'
 import PinGate from '../components/PinGate.jsx'
 import { useHistory } from '../context/HistoryContext.jsx'
 import { getCurrentWeek } from '../data/storage.js'
-import { tachesHebdoElisa, SEMAINES, CALENDRIER, elisaPresente, TACHES_MENSUELLES } from '../data/planning.js'
+import { tachesHebdoElisa, SEMAINES, CALENDRIER, elisaPresente, TACHES_MENSUELLES, SEMAINE_MOIS } from '../data/planning.js'
 
 const USER = 'elisa'
 const SEMAINES_ELISA = SEMAINES.filter(s => elisaPresente(s))
@@ -46,7 +45,7 @@ function computeProgress(history, week, carryover) {
   return { done, total }
 }
 
-function checkToutValide(history) {
+function checkToutValide(history, mois, annee) {
   const semainsDone = SEMAINES_ELISA.every(week =>
     tachesHebdoElisa(week).every(t =>
       Array.from({ length: t.occurrences }, (_, i) => i + 1).every(occ =>
@@ -54,8 +53,6 @@ function checkToutValide(history) {
       )
     )
   )
-  const mois = getMonth(new Date()) + 1
-  const annee = getYear(new Date())
   const mensuelDone = TACHES_MENSUELLES.every(t =>
     history.some(h => h.user === USER && h.task === t.id && h.type === 'mensuel' && h.mois === mois && h.annee === annee && h.completed)
   )
@@ -69,12 +66,13 @@ export default function Elisa() {
 
   if (loading) return <div className="page-loading">Chargement…</div>
 
+  const { mois, annee } = SEMAINE_MOIS[week] ?? { mois: 5, annee: 2025 }
   const taches = tachesHebdoElisa(week)
   const carryover = computeCarryover(history, week)
   const { done, total } = computeProgress(history, week, carryover)
   const semaineComplete = total > 0 && done >= total
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
-  const toutValide = checkToutValide(history)
+  const toutValide = checkToutValide(history, mois, annee)
 
   return (
     <PinGate user="elisa">
@@ -116,7 +114,7 @@ export default function Elisa() {
         </div>
       )}
 
-      <MonthlySummary user={USER} />
+      <MonthlySummary user={USER} mois={mois} annee={annee} />
       <TaskList user={USER} week={week} tachesHebdo={taches} carryoverItems={carryover} />
     </div>
     </PinGate>

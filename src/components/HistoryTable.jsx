@@ -16,7 +16,7 @@ export default function HistoryTable({ history }) {
   })
 
   const sorted = [...filtered].sort(
-    (a, b) => new Date(b.completedAt) - new Date(a.completedAt),
+    (a, b) => new Date(b.completedAt ?? b.donneLe) - new Date(a.completedAt ?? a.donneLe),
   )
 
   return (
@@ -73,9 +73,9 @@ export default function HistoryTable({ history }) {
                     {h.user === 'nathys' ? 'Nathys' : 'Elisa'}
                   </td>
                   <td>{h.week ? `S${h.week}` : `${h.mois}/${h.annee}`}</td>
-                  <td>{TASK_IDS[h.task] ?? h.task}</td>
+                  <td>{h.type === 'argent_donne' ? 'Argent de poche' : (TASK_IDS[h.task] ?? h.task)}</td>
                   <td>{h.occurrence ?? '—'}</td>
-                  <td>{new Date(h.completedAt).toLocaleString('fr-FR')}</td>
+                  <td>{new Date(h.completedAt ?? h.donneLe).toLocaleString('fr-FR')}</td>
                 </tr>
               ))}
             </tbody>
