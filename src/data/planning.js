@@ -67,21 +67,21 @@ export const MOIS_NOMS = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Ju
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 
 export const MOIS_PLANNING = [
-  { mois: 5, annee: 2025 },
-  { mois: 6, annee: 2025 },
+  { mois: 5, annee: 2026 },
+  { mois: 6, annee: 2026 },
 ]
 
 // Rattachement de chaque semaine à son mois (basé sur la date de début)
 export const SEMAINE_MOIS = {
-  19: { mois: 5, annee: 2025 },
-  20: { mois: 5, annee: 2025 },
-  21: { mois: 5, annee: 2025 },
-  22: { mois: 5, annee: 2025 },
-  23: { mois: 6, annee: 2025 },
-  24: { mois: 6, annee: 2025 },
-  25: { mois: 6, annee: 2025 },
-  26: { mois: 6, annee: 2025 },
-  27: { mois: 6, annee: 2025 },
+  19: { mois: 5, annee: 2026 },
+  20: { mois: 5, annee: 2026 },
+  21: { mois: 5, annee: 2026 },
+  22: { mois: 5, annee: 2026 },
+  23: { mois: 6, annee: 2026 },
+  24: { mois: 6, annee: 2026 },
+  25: { mois: 6, annee: 2026 },
+  26: { mois: 6, annee: 2026 },
+  27: { mois: 6, annee: 2026 },
 }
 
 export function getWeeksForMonth(mois, annee) {
@@ -96,15 +96,15 @@ export function moisSuivantLabel(mois, annee) {
     : `${MOIS_NOMS[mois + 1]} ${mois === 12 ? annee + 1 : annee}`
 }
 
-// Calendrier de référence S19-S27 2025
+// Calendrier de référence S19-S27 2026
 export const CALENDRIER = {
-  19: '5 – 11 mai 2025',
-  20: '12 – 18 mai 2025',
-  21: '19 – 25 mai 2025',
-  22: '26 mai – 1 juin 2025',
-  23: '2 – 8 juin 2025',
-  24: '9 – 15 juin 2025',
-  25: '16 – 22 juin 2025',
-  26: '23 – 29 juin 2025',
-  27: '30 juin – 6 juil. 2025',
+  19: '4 – 10 mai 2026',
+  20: '11 – 17 mai 2026',
+  21: '18 – 24 mai 2026',
+  22: '25 – 31 mai 2026',
+  23: '1 – 7 juin 2026',
+  24: '8 – 14 juin 2026',
+  25: '15 – 21 juin 2026',
+  26: '22 – 28 juin 2026',
+  27: '29 juin – 5 juil. 2026',
 }

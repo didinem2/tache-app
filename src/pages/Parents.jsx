@@ -4,19 +4,11 @@ import HistoryTable from '../components/HistoryTable.jsx'
 import ExportButton from '../components/ExportButton.jsx'
 import PinGate from '../components/PinGate.jsx'
 import { useHistory } from '../context/HistoryContext.jsx'
-import {
-  tachesHebdoNathys, tachesHebdoElisa, TACHES_MENSUELLES,
-  MOIS_PLANNING, MOIS_NOMS, getWeeksForMonth, moisSuivantLabel,
-  elisaPresente,
-} from '../data/planning.js'
+import { usePlanning } from '../context/PlanningContext.jsx'
+import { TACHES_MENSUELLES, MOIS_NOMS, moisSuivantLabel } from '../data/planning.js'
 
 function countHebdoDone(history, user, week) {
   return history.filter(h => h.user === user && h.week === week && h.type === 'hebdo').length
-}
-
-function expectedHebdo(user, week) {
-  const taches = user === 'nathys' ? tachesHebdoNathys(week) : tachesHebdoElisa(week)
-  return taches.reduce((acc, t) => acc + t.occurrences, 0)
 }
 
 function countMensuelDone(history, user, mois, annee) {
@@ -37,12 +29,37 @@ function MonthNav({ moisIdx, total, mois, annee, onPrev, onNext }) {
 
 export default function Parents() {
   const navigate = useNavigate()
-  const { history, loading, isArgentDonne, getArgentDonneLe, toggleArgentDonne } = useHistory()
+  const { history, loading: hLoading, isArgentDonne, getArgentDonneLe, toggleArgentDonne } = useHistory()
+  const {
+    loading: pLoading,
+    getMoisPlanning, getWeeksForMonth, tachesHebdoNathys, tachesHebdoElisa, elisaPresente,
+  } = usePlanning()
   const [moisIdx, setMoisIdx] = useState(0)
 
-  if (loading) return <div className="page-loading">Chargement…</div>
+  if (hLoading || pLoading) return <div className="page-loading">Chargement…</div>
 
-  const { mois, annee } = MOIS_PLANNING[moisIdx]
+  const moisPlanning = getMoisPlanning()
+  if (moisPlanning.length === 0) {
+    return (
+      <PinGate user="parents">
+        <div className="page page-parents">
+          <header className="page-header">
+            <button className="back-btn" onClick={() => navigate('/')}>← Retour</button>
+            <h2>👁️ Compte surveillance</h2>
+          </header>
+          <div className="admin-empty">
+            <p>Aucune semaine configurée dans le planning.</p>
+            <button className="btn-seed" onClick={() => navigate('/admin')}>
+              Configurer le planning
+            </button>
+          </div>
+        </div>
+      </PinGate>
+    )
+  }
+
+  const idx = Math.min(moisIdx, moisPlanning.length - 1)
+  const { mois, annee } = moisPlanning[idx]
   const weeksForMonth = getWeeksForMonth(mois, annee)
   const moisLabel = moisSuivantLabel(mois, annee)
   const moisMensuel = TACHES_MENSUELLES.length
@@ -54,17 +71,25 @@ export default function Parents() {
 
   const elisaWeeks = weeksForMonth.filter(w => elisaPresente(w))
 
+  function expectedHebdo(user, week) {
+    const taches = user === 'nathys' ? tachesHebdoNathys(week) : tachesHebdoElisa(week)
+    return taches.reduce((acc, t) => acc + t.occurrences, 0)
+  }
+
   return (
     <PinGate user="parents">
       <div className="page page-parents">
         <header className="page-header">
           <button className="back-btn" onClick={() => navigate('/')}>← Retour</button>
           <h2>👁️ Compte surveillance</h2>
+          <button className="admin-link-btn" onClick={() => navigate('/admin')} title="Gérer le planning">
+            🔧
+          </button>
         </header>
 
         <MonthNav
-          moisIdx={moisIdx}
-          total={MOIS_PLANNING.length}
+          moisIdx={idx}
+          total={moisPlanning.length}
           mois={mois}
           annee={annee}
           onPrev={() => setMoisIdx(i => i - 1)}
