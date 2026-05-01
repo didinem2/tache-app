@@ -36,7 +36,7 @@ export default function Parents() {
     <div className="page page-parents">
       <header className="page-header">
         <button className="back-btn" onClick={() => navigate('/')}>← Retour</button>
-        <h2>👨‍👩‍👧‍👧 Vue Parents</h2>
+        <h2>👁️ Compte surveillance</h2>
       </header>
 
       <section className="summary-section">

@@ -25,8 +25,8 @@ export default function Home() {
         </button>
 
         <button className="home-btn btn-parents" onClick={() => navigate('/parents')}>
-          <span className="btn-emoji">👨‍👩‍👧‍👧</span>
-          <span className="btn-name">Parents</span>
+          <span className="btn-emoji">👁️</span>
+          <span className="btn-name">Compte surveillance</span>
         </button>
       </div>
     </div>

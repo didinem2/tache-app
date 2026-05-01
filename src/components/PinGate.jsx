@@ -9,7 +9,7 @@ const PINS = {
 const LABELS = {
   nathys: { emoji: '🌸', nom: 'Nathys' },
   elisa: { emoji: '⭐', nom: 'Elisa' },
-  parents: { emoji: '👨‍👩‍👧‍👧', nom: 'Parents' },
+  parents: { emoji: '👁️', nom: 'Compte surveillance' },
 }
 
 function sessionKey(user) {
