@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm audit *)",
+      "Bash(curl -s http://localhost:5173/suivi-taches/)"
+    ]
+  }
+}
