@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { getMonth, getYear } from 'date-fns'
 import TaskList from '../components/TaskList.jsx'
 import MonthlySummary from '../components/MonthlySummary.jsx'
+import PinGate from '../components/PinGate.jsx'
 import { useHistory } from '../context/HistoryContext.jsx'
 import { getCurrentWeek } from '../data/storage.js'
 import { tachesHebdoNathys, SEMAINES, CALENDRIER, TACHES_MENSUELLES } from '../data/planning.js'
@@ -76,6 +77,7 @@ export default function Nathys() {
   const toutValide = checkToutValide(history)
 
   return (
+    <PinGate user="nathys">
     <div className="page page-nathys">
       <header className="page-header">
         <button className="back-btn" onClick={() => navigate('/')}>← Retour</button>
@@ -117,5 +119,6 @@ export default function Nathys() {
       <MonthlySummary user={USER} />
       <TaskList user={USER} week={week} tachesHebdo={taches} carryoverItems={carryover} />
     </div>
+    </PinGate>
   )
 }

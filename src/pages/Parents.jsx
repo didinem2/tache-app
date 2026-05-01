@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import HistoryTable from '../components/HistoryTable.jsx'
 import ExportButton from '../components/ExportButton.jsx'
+import PinGate from '../components/PinGate.jsx'
 import { useHistory } from '../context/HistoryContext.jsx'
 import { SEMAINES, tachesHebdoNathys, tachesHebdoElisa, TACHES_MENSUELLES } from '../data/planning.js'
 import { getMonth, getYear } from 'date-fns'
@@ -31,6 +32,7 @@ export default function Parents() {
   const moisMensuel = TACHES_MENSUELLES.length
 
   return (
+    <PinGate user="parents">
     <div className="page page-parents">
       <header className="page-header">
         <button className="back-btn" onClick={() => navigate('/')}>← Retour</button>
@@ -87,5 +89,6 @@ export default function Parents() {
         <HistoryTable history={history} />
       </section>
     </div>
+    </PinGate>
   )
 }
