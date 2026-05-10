@@ -32,9 +32,8 @@ export function PlanningProvider({ children }) {
   const [semaines, setSemaines] = useState([])
   const [loadingSemaines, setLoadingSemaines] = useState(true)
   const [tachesMensuelles, setTachesMensuelles] = useState([])
-  const [loadingTaches, setLoadingTaches] = useState(true)
 
-  const loading = loadingSemaines || loadingTaches
+  const loading = loadingSemaines
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'semaines'), snapshot => {
@@ -47,11 +46,11 @@ export function PlanningProvider({ children }) {
   }, [])
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'tachesMensuelles'), snapshot => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
-      setTachesMensuelles(data)
-      setLoadingTaches(false)
-    })
+    const unsub = onSnapshot(
+      collection(db, 'tachesMensuelles'),
+      snapshot => setTachesMensuelles(snapshot.docs.map(d => ({ id: d.id, ...d.data() }))),
+      _err => {},
+    )
     return unsub
   }, [])
 
