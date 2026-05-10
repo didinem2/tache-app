@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import {
   collection, doc, onSnapshot,
-  addDoc, updateDoc, deleteDoc, writeBatch,
+  addDoc, updateDoc, deleteDoc, writeBatch, setDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase.js'
 import { TASK_IDS } from '../data/planning.js'
@@ -18,18 +18,39 @@ export const SEED_SEMAINES = [
   { num: 27, label: '29 juin – 5 juil. 2026', mois: 6, annee: 2026, elisaPresente: true  },
 ]
 
+// IDs fixes pour correspondre aux enregistrements history existants
+const SEED_TACHES_MENSUELLES = [
+  { id: 'salle_de_bain',  label: 'Nettoyer la salle de bain' },
+  { id: 'chambre',        label: 'Nettoyer sa chambre' },
+  { id: 'poubelles',      label: 'Sortir les poubelles' },
+  { id: 'lave_vaisselle', label: 'Vider le lave-vaisselle' },
+]
+
 const PlanningContext = createContext(null)
 
 export function PlanningProvider({ children }) {
   const [semaines, setSemaines] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loadingSemaines, setLoadingSemaines] = useState(true)
+  const [tachesMensuelles, setTachesMensuelles] = useState([])
+  const [loadingTaches, setLoadingTaches] = useState(true)
+
+  const loading = loadingSemaines || loadingTaches
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'semaines'), snapshot => {
       const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
       data.sort((a, b) => a.num - b.num)
       setSemaines(data)
-      setLoading(false)
+      setLoadingSemaines(false)
+    })
+    return unsub
+  }, [])
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'tachesMensuelles'), snapshot => {
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+      setTachesMensuelles(data)
+      setLoadingTaches(false)
     })
     return unsub
   }, [])
@@ -43,7 +64,10 @@ export function PlanningProvider({ children }) {
   }
 
   function tachesHebdoNathys(num) {
-    const nb = elisaPresente(num) ? 3 : 4
+    const s = getSemaine(num)
+    // nathysOccurrences stocké explicitement, sinon règle par défaut (3 si Elisa présente, 4 sinon)
+    const nb = s?.nathysOccurrences ?? (elisaPresente(num) ? 3 : 4)
+    if (nb === 0) return []
     return [
       { id: 'mettre_table',      label: TASK_IDS.mettre_table,      occurrences: nb },
       { id: 'debarrasser_table', label: TASK_IDS.debarrasser_table, occurrences: nb },
@@ -52,9 +76,12 @@ export function PlanningProvider({ children }) {
 
   function tachesHebdoElisa(num) {
     if (!elisaPresente(num)) return []
+    const s = getSemaine(num)
+    const nb = s?.elisaOccurrences ?? 4
+    if (nb === 0) return []
     return [
-      { id: 'mettre_table',      label: TASK_IDS.mettre_table,      occurrences: 4 },
-      { id: 'debarrasser_table', label: TASK_IDS.debarrasser_table, occurrences: 4 },
+      { id: 'mettre_table',      label: TASK_IDS.mettre_table,      occurrences: nb },
+      { id: 'debarrasser_table', label: TASK_IDS.debarrasser_table, occurrences: nb },
     ]
   }
 
@@ -86,6 +113,8 @@ export function PlanningProvider({ children }) {
     return semaines.map(s => s.num)
   }
 
+  // ── Semaines CRUD ─────────────────────────────────────────────────────────
+
   async function addSemaine(data) {
     await addDoc(collection(db, 'semaines'), data)
   }
@@ -106,13 +135,34 @@ export function PlanningProvider({ children }) {
     await batch.commit()
   }
 
+  // ── Tâches mensuelles CRUD ────────────────────────────────────────────────
+
+  async function addTacheMensuelle(label) {
+    await addDoc(collection(db, 'tachesMensuelles'), { label })
+  }
+
+  async function deleteTacheMensuelle(id) {
+    await deleteDoc(doc(db, 'tachesMensuelles', id))
+  }
+
+  // Initialise avec les 4 tâches par défaut en conservant les IDs fixes
+  // pour la compatibilité avec l'historique existant
+  async function seedTachesMensuelles() {
+    const batch = writeBatch(db)
+    SEED_TACHES_MENSUELLES.forEach(t => {
+      batch.set(doc(db, 'tachesMensuelles', t.id), { label: t.label })
+    })
+    await batch.commit()
+  }
+
   return (
     <PlanningContext.Provider value={{
-      semaines, loading,
+      semaines, tachesMensuelles, loading,
       getSemaine, elisaPresente,
       tachesHebdoNathys, tachesHebdoElisa,
       getSemaineMois, getMoisPlanning, getWeeksForMonth, getNumsSemaines,
       addSemaine, updateSemaine, deleteSemaine, seedSemaines,
+      addTacheMensuelle, deleteTacheMensuelle, seedTachesMensuelles,
     }}>
       {children}
     </PlanningContext.Provider>

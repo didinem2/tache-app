@@ -1,12 +1,13 @@
 import { useHistory } from '../context/HistoryContext.jsx'
-import { TACHES_MENSUELLES } from '../data/planning.js'
+import { usePlanning } from '../context/PlanningContext.jsx'
 
 export default function MonthlySummary({ user, mois, annee }) {
   const { isMensuelChecked, toggleMensuel } = useHistory()
+  const { tachesMensuelles } = usePlanning()
 
-  const total = TACHES_MENSUELLES.length
-  const done = TACHES_MENSUELLES.filter(t => isMensuelChecked(user, t.id, mois, annee)).length
-  const pct = Math.round((done / total) * 100)
+  const total = tachesMensuelles.length
+  const done = tachesMensuelles.filter(t => isMensuelChecked(user, t.id, mois, annee)).length
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
   return (
     <div className="encart encart-monthly">
@@ -20,7 +21,9 @@ export default function MonthlySummary({ user, mois, annee }) {
       </div>
 
       <div className="monthly-tasks">
-        {TACHES_MENSUELLES.map(tache => {
+        {tachesMensuelles.length === 0 ? (
+          <p className="admin-occ-hint">Aucune tâche mensuelle configurée.</p>
+        ) : tachesMensuelles.map(tache => {
           const checked = isMensuelChecked(user, tache.id, mois, annee)
           return (
             <label key={tache.id} className={`checkbox-row ${checked ? 'checked' : ''}`}>

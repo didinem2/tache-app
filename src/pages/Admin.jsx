@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PinGate from '../components/PinGate.jsx'
 import { usePlanning } from '../context/PlanningContext.jsx'
-import { MOIS_NOMS, moisSuivantLabel } from '../data/planning.js'
+import { MOIS_NOMS } from '../data/planning.js'
 
 const MOIS_OPTIONS = [1,2,3,4,5,6,7,8,9,10,11,12]
 
@@ -17,18 +17,53 @@ const FORM_EMPTY = {
 export default function Admin() {
   const navigate = useNavigate()
   const {
-    semaines, loading,
-    getMoisPlanning, elisaPresente,
+    semaines, tachesMensuelles, loading,
+    getMoisPlanning,
     addSemaine, updateSemaine, deleteSemaine, seedSemaines,
+    addTacheMensuelle, deleteTacheMensuelle, seedTachesMensuelles,
   } = usePlanning()
 
   const [form, setForm] = useState(FORM_EMPTY)
   const [saving, setSaving] = useState(false)
   const [confirm, setConfirm] = useState(null)
+  // { [semaineId]: { nathys?: number, elisa?: number } }
+  const [occEdits, setOccEdits] = useState({})
+  const [confirmTache, setConfirmTache] = useState(null)
+  const [newTacheLabel, setNewTacheLabel] = useState('')
 
   if (loading) return <div className="page-loading">Chargement…</div>
 
   const moisPlanning = getMoisPlanning()
+
+  // ── Occurrences ───────────────────────────────────────────────────────────
+
+  function getEffectiveNathysOcc(s) {
+    return occEdits[s.id]?.nathys ?? s.nathysOccurrences ?? (s.elisaPresente ? 3 : 4)
+  }
+
+  function getEffectiveElisaOcc(s) {
+    return occEdits[s.id]?.elisa ?? s.elisaOccurrences ?? 4
+  }
+
+  function handleNathysOccChange(s, val) {
+    setOccEdits(prev => ({ ...prev, [s.id]: { ...prev[s.id], nathys: Number(val) } }))
+  }
+
+  function handleElisaOccChange(s, val) {
+    setOccEdits(prev => ({ ...prev, [s.id]: { ...prev[s.id], elisa: Number(val) } }))
+  }
+
+  async function handleOccBlur(s) {
+    const edit = occEdits[s.id]
+    if (!edit) return
+    const updates = {}
+    if (edit.nathys !== undefined) updates.nathysOccurrences = edit.nathys
+    if (edit.elisa !== undefined) updates.elisaOccurrences = edit.elisa
+    if (Object.keys(updates).length > 0) await updateSemaine(s.id, updates)
+    setOccEdits(prev => { const next = { ...prev }; delete next[s.id]; return next })
+  }
+
+  // ── Semaines ──────────────────────────────────────────────────────────────
 
   async function handleAdd(e) {
     e.preventDefault()
@@ -69,6 +104,33 @@ export default function Admin() {
     setSaving(false)
   }
 
+  // ── Tâches mensuelles ─────────────────────────────────────────────────────
+
+  async function handleAddTache(e) {
+    e.preventDefault()
+    const label = newTacheLabel.trim()
+    if (!label) return
+    setSaving(true)
+    await addTacheMensuelle(label)
+    setNewTacheLabel('')
+    setSaving(false)
+  }
+
+  async function handleDeleteTache(t) {
+    if (confirmTache === t.id) {
+      await deleteTacheMensuelle(t.id)
+      setConfirmTache(null)
+    } else {
+      setConfirmTache(t.id)
+    }
+  }
+
+  async function handleSeedTaches() {
+    setSaving(true)
+    await seedTachesMensuelles()
+    setSaving(false)
+  }
+
   return (
     <PinGate user="parents">
       <div className="page page-parents">
@@ -77,6 +139,7 @@ export default function Admin() {
           <h2>🔧 Planning</h2>
         </header>
 
+        {/* ── Semaines ── */}
         {semaines.length === 0 && (
           <div className="admin-empty">
             <p>Aucune semaine configurée.</p>
@@ -93,22 +156,57 @@ export default function Admin() {
               <h3 className="section-title">{MOIS_NOMS[mois]} {annee}</h3>
               <div className="admin-weeks">
                 {weeks.map(s => (
-                  <div key={s.id} className="admin-week-row">
-                    <span className="admin-week-num">S{s.num}</span>
-                    <span className="admin-week-label">{s.label}</span>
-                    <button
-                      className={`admin-elisa-toggle ${s.elisaPresente ? 'present' : 'absent'}`}
-                      onClick={() => handleToggleElisa(s)}
-                      title="Cliquer pour basculer"
-                    >
-                      {s.elisaPresente ? '⭐ Elisa présente' : '— Elisa absente'}
-                    </button>
-                    <button
-                      className={`admin-del-btn ${confirm === s.id ? 'confirm' : ''}`}
-                      onClick={() => handleDelete(s)}
-                    >
-                      {confirm === s.id ? 'Confirmer ?' : '🗑'}
-                    </button>
+                  <div key={s.id} className="admin-week-card">
+                    <div className="admin-week-row">
+                      <span className="admin-week-num">S{s.num}</span>
+                      <span className="admin-week-label">{s.label}</span>
+                      <button
+                        className={`admin-elisa-toggle ${s.elisaPresente ? 'present' : 'absent'}`}
+                        onClick={() => handleToggleElisa(s)}
+                        title="Cliquer pour basculer"
+                      >
+                        {s.elisaPresente ? '⭐ Elisa présente' : '— Elisa absente'}
+                      </button>
+                      <button
+                        className={`admin-del-btn ${confirm === s.id ? 'confirm' : ''}`}
+                        onClick={() => handleDelete(s)}
+                      >
+                        {confirm === s.id ? 'Confirmer ?' : '🗑'}
+                      </button>
+                    </div>
+
+                    <div className="admin-week-occurrences">
+                      <span className="admin-occ-user">🌸 Nathys</span>
+                      <input
+                        className="admin-occ-input"
+                        type="number"
+                        min="0"
+                        max="7"
+                        value={getEffectiveNathysOcc(s)}
+                        onChange={e => handleNathysOccChange(s, e.target.value)}
+                        onBlur={() => handleOccBlur(s)}
+                      />
+                      <span className="admin-occ-unit">× / tâche</span>
+                      {s.elisaPresente && (
+                        <>
+                          <span className="admin-occ-sep">|</span>
+                          <span className="admin-occ-user">⭐ Elisa</span>
+                          <input
+                            className="admin-occ-input"
+                            type="number"
+                            min="0"
+                            max="7"
+                            value={getEffectiveElisaOcc(s)}
+                            onChange={e => handleElisaOccChange(s, e.target.value)}
+                            onBlur={() => handleOccBlur(s)}
+                          />
+                          <span className="admin-occ-unit">× / tâche</span>
+                        </>
+                      )}
+                      {(getEffectiveNathysOcc(s) === 0 || (s.elisaPresente && getEffectiveElisaOcc(s) === 0)) && (
+                        <span className="admin-occ-hint">0 = semaine sans tâches</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -116,6 +214,7 @@ export default function Admin() {
           )
         })}
 
+        {/* ── Ajouter une semaine ── */}
         <section className="admin-add-section">
           <h3 className="section-title">Ajouter une semaine</h3>
           <form className="admin-form" onSubmit={handleAdd}>
@@ -174,6 +273,52 @@ export default function Admin() {
               </label>
             </div>
             <button type="submit" className="btn-add-semaine" disabled={saving}>
+              Ajouter
+            </button>
+          </form>
+        </section>
+
+        {/* ── Tâches mensuelles ── */}
+        <section className="admin-add-section">
+          <h3 className="section-title">Tâches mensuelles</h3>
+
+          {tachesMensuelles.length === 0 ? (
+            <div className="admin-empty" style={{ padding: '0.75rem 0 1rem' }}>
+              <p>Aucune tâche mensuelle configurée.</p>
+              <button className="btn-seed" onClick={handleSeedTaches} disabled={saving}>
+                Initialiser les 4 tâches par défaut
+              </button>
+            </div>
+          ) : (
+            <div className="admin-weeks admin-taches-list">
+              {tachesMensuelles.map(t => (
+                <div key={t.id} className="admin-week-row">
+                  <span className="admin-tache-label">{t.label}</span>
+                  <button
+                    className={`admin-del-btn ${confirmTache === t.id ? 'confirm' : ''}`}
+                    onClick={() => handleDeleteTache(t)}
+                  >
+                    {confirmTache === t.id ? 'Confirmer ?' : '🗑'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <form className="admin-form admin-tache-form" onSubmit={handleAddTache}>
+            <div className="admin-form-row">
+              <label className="admin-tache-input-label">
+                Nouvelle tâche
+                <input
+                  type="text"
+                  placeholder="ex: Passer l'aspirateur"
+                  value={newTacheLabel}
+                  onChange={e => setNewTacheLabel(e.target.value)}
+                  required
+                />
+              </label>
+            </div>
+            <button type="submit" className="btn-add-semaine" disabled={saving || !newTacheLabel.trim()}>
               Ajouter
             </button>
           </form>

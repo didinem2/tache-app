@@ -5,15 +5,17 @@ import ExportButton from '../components/ExportButton.jsx'
 import PinGate from '../components/PinGate.jsx'
 import { useHistory } from '../context/HistoryContext.jsx'
 import { usePlanning } from '../context/PlanningContext.jsx'
-import { TACHES_MENSUELLES, MOIS_NOMS, moisSuivantLabel } from '../data/planning.js'
+import { MOIS_NOMS, moisSuivantLabel } from '../data/planning.js'
 
 function countHebdoDone(history, user, week) {
   return history.filter(h => h.user === user && h.week === week && h.type === 'hebdo').length
 }
 
-function countMensuelDone(history, user, mois, annee) {
+function countMensuelDone(history, user, mois, annee, tachesMensuelles) {
+  const taskIds = new Set(tachesMensuelles.map(t => t.id))
   return history.filter(
-    h => h.user === user && h.type === 'mensuel' && h.mois === mois && h.annee === annee,
+    h => h.user === user && h.type === 'mensuel' && h.mois === mois && h.annee === annee
+      && taskIds.has(h.task),
   ).length
 }
 
@@ -31,7 +33,7 @@ export default function Parents() {
   const navigate = useNavigate()
   const { history, loading: hLoading, isArgentDonne, getArgentDonneLe, toggleArgentDonne } = useHistory()
   const {
-    loading: pLoading,
+    tachesMensuelles, loading: pLoading,
     getMoisPlanning, getWeeksForMonth, tachesHebdoNathys, tachesHebdoElisa, elisaPresente,
   } = usePlanning()
   const [moisIdx, setMoisIdx] = useState(0)
@@ -62,7 +64,7 @@ export default function Parents() {
   const { mois, annee } = moisPlanning[idx]
   const weeksForMonth = getWeeksForMonth(mois, annee)
   const moisLabel = moisSuivantLabel(mois, annee)
-  const moisMensuel = TACHES_MENSUELLES.length
+  const moisMensuel = tachesMensuelles.length
 
   const nathysArgent = isArgentDonne('nathys', mois, annee)
   const elisaArgent = isArgentDonne('elisa', mois, annee)
@@ -129,7 +131,7 @@ export default function Parents() {
           </div>
 
           <p className="mensuel-line">
-            Tâches mensuelles : <strong>{countMensuelDone(history, 'nathys', mois, annee)} / {moisMensuel}</strong>
+            Tâches mensuelles : <strong>{countMensuelDone(history, 'nathys', mois, annee, tachesMensuelles)} / {moisMensuel}</strong>
           </p>
 
           <label className="argent-label">
@@ -180,7 +182,7 @@ export default function Parents() {
           </div>
 
           <p className="mensuel-line">
-            Tâches mensuelles : <strong>{countMensuelDone(history, 'elisa', mois, annee)} / {moisMensuel}</strong>
+            Tâches mensuelles : <strong>{countMensuelDone(history, 'elisa', mois, annee, tachesMensuelles)} / {moisMensuel}</strong>
           </p>
 
           <label className="argent-label">

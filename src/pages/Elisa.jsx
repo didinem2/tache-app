@@ -5,15 +5,13 @@ import PinGate from '../components/PinGate.jsx'
 import { useHistory } from '../context/HistoryContext.jsx'
 import { usePlanning } from '../context/PlanningContext.jsx'
 import { getCurrentWeek } from '../data/storage.js'
-import { TACHES_MENSUELLES } from '../data/planning.js'
-
 const USER = 'elisa'
 
 export default function Elisa() {
   const navigate = useNavigate()
   const { history, loading: hLoading } = useHistory()
   const {
-    semaines, loading: pLoading,
+    semaines, tachesMensuelles, loading: pLoading,
     getSemaine, getSemaineMois, elisaPresente,
     tachesHebdoElisa, tachesHebdoNathys,
     getNumsSemaines,
@@ -67,7 +65,7 @@ export default function Elisa() {
         history.some(h => h.user === USER && h.week === w && h.task === t.id && h.occurrence === occ && h.type === 'hebdo' && h.completed)
       )
     )
-  ) && TACHES_MENSUELLES.every(t =>
+  ) && tachesMensuelles.every(t =>
     history.some(h => h.user === USER && h.task === t.id && h.type === 'mensuel' && h.mois === mois && h.annee === annee && h.completed)
   )
 
