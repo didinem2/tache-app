@@ -26,7 +26,6 @@ export default function Admin() {
   const [form, setForm] = useState(FORM_EMPTY)
   const [saving, setSaving] = useState(false)
   const [confirm, setConfirm] = useState(null)
-  // { [semaineId]: { nathys?: number, elisa?: number } }
   const [occEdits, setOccEdits] = useState({})
   const [confirmTache, setConfirmTache] = useState(null)
   const [newTacheLabel, setNewTacheLabel] = useState('')
@@ -35,7 +34,7 @@ export default function Admin() {
 
   const moisPlanning = getMoisPlanning()
 
-  // ── Occurrences ───────────────────────────────────────────────────────────
+  // ── Occurrences hebdo ─────────────────────────────────────────────────────
 
   function getEffectiveNathysOcc(s) {
     return occEdits[s.id]?.nathys ?? s.nathysOccurrences ?? (s.elisaPresente ? 3 : 4)
@@ -63,7 +62,7 @@ export default function Admin() {
     setOccEdits(prev => { const next = { ...prev }; delete next[s.id]; return next })
   }
 
-  // ── Semaines ──────────────────────────────────────────────────────────────
+  // ── Semaines CRUD ─────────────────────────────────────────────────────────
 
   async function handleAdd(e) {
     e.preventDefault()
@@ -104,7 +103,7 @@ export default function Admin() {
     setSaving(false)
   }
 
-  // ── Tâches mensuelles ─────────────────────────────────────────────────────
+  // ── Tâches mensuelles CRUD ────────────────────────────────────────────────
 
   async function handleAddTache(e) {
     e.preventDefault()
@@ -139,7 +138,6 @@ export default function Admin() {
           <h2>🔧 Planning</h2>
         </header>
 
-        {/* ── Semaines ── */}
         {semaines.length === 0 && (
           <div className="admin-empty">
             <p>Aucune semaine configurée.</p>
@@ -149,11 +147,13 @@ export default function Admin() {
           </div>
         )}
 
-        {moisPlanning.map(({ mois, annee }) => {
+        {moisPlanning.map(({ mois, annee }, moisIndex) => {
           const weeks = semaines.filter(s => s.mois === mois && s.annee === annee)
           return (
             <section key={`${mois}-${annee}`} className="admin-month">
               <h3 className="section-title">{MOIS_NOMS[mois]} {annee}</h3>
+
+              {/* ── Semaines du mois ── */}
               <div className="admin-weeks">
                 {weeks.map(s => (
                   <div key={s.id} className="admin-week-card">
@@ -203,13 +203,71 @@ export default function Admin() {
                           <span className="admin-occ-unit">× / tâche</span>
                         </>
                       )}
-                      {(getEffectiveNathysOcc(s) === 0 || (s.elisaPresente && getEffectiveElisaOcc(s) === 0)) && (
+                      {(getEffectiveNathysOcc(s) === 0 ||
+                        (s.elisaPresente && getEffectiveElisaOcc(s) === 0)) && (
                         <span className="admin-occ-hint">0 = semaine sans tâches</span>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
+
+              {/* ── Tâches mensuelles du mois (affichées une seule fois, sur le premier mois) ── */}
+              {moisIndex === 0 && (
+                <div className="admin-mensuel-block">
+                  <div className="admin-mensuel-title">📅 Tâches mensuelles</div>
+
+                  {tachesMensuelles.length === 0 ? (
+                    <div className="admin-mensuel-empty">
+                      <p>Aucune tâche mensuelle.</p>
+                      <button className="btn-seed" onClick={handleSeedTaches} disabled={saving}>
+                        Initialiser les 4 tâches par défaut
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="admin-mensuel-list">
+                      {tachesMensuelles.map(t => (
+                        <div key={t.id} className="admin-mensuel-row">
+                          <span className="admin-mensuel-label">{t.label}</span>
+                          <button
+                            className={`admin-del-btn ${confirmTache === t.id ? 'confirm' : ''}`}
+                            onClick={() => handleDeleteTache(t)}
+                          >
+                            {confirmTache === t.id ? 'Confirmer ?' : '🗑'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <form className="admin-mensuel-form" onSubmit={handleAddTache}>
+                    <input
+                      type="text"
+                      className="admin-mensuel-input"
+                      placeholder="Nouvelle tâche mensuelle…"
+                      value={newTacheLabel}
+                      onChange={e => setNewTacheLabel(e.target.value)}
+                    />
+                    <button
+                      type="submit"
+                      className="btn-add-semaine"
+                      disabled={saving || !newTacheLabel.trim()}
+                    >
+                      Ajouter
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* Rappel liste (mois suivants) */}
+              {moisIndex > 0 && tachesMensuelles.length > 0 && (
+                <div className="admin-mensuel-recap">
+                  <span className="admin-mensuel-recap-label">📅 Tâches mensuelles :</span>
+                  {tachesMensuelles.map(t => (
+                    <span key={t.id} className="admin-mensuel-recap-tag">{t.label}</span>
+                  ))}
+                </div>
+              )}
             </section>
           )
         })}
@@ -273,52 +331,6 @@ export default function Admin() {
               </label>
             </div>
             <button type="submit" className="btn-add-semaine" disabled={saving}>
-              Ajouter
-            </button>
-          </form>
-        </section>
-
-        {/* ── Tâches mensuelles ── */}
-        <section className="admin-add-section">
-          <h3 className="section-title">Tâches mensuelles</h3>
-
-          {tachesMensuelles.length === 0 ? (
-            <div className="admin-empty" style={{ padding: '0.75rem 0 1rem' }}>
-              <p>Aucune tâche mensuelle configurée.</p>
-              <button className="btn-seed" onClick={handleSeedTaches} disabled={saving}>
-                Initialiser les 4 tâches par défaut
-              </button>
-            </div>
-          ) : (
-            <div className="admin-weeks admin-taches-list">
-              {tachesMensuelles.map(t => (
-                <div key={t.id} className="admin-week-row">
-                  <span className="admin-tache-label">{t.label}</span>
-                  <button
-                    className={`admin-del-btn ${confirmTache === t.id ? 'confirm' : ''}`}
-                    onClick={() => handleDeleteTache(t)}
-                  >
-                    {confirmTache === t.id ? 'Confirmer ?' : '🗑'}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <form className="admin-form admin-tache-form" onSubmit={handleAddTache}>
-            <div className="admin-form-row">
-              <label className="admin-tache-input-label">
-                Nouvelle tâche
-                <input
-                  type="text"
-                  placeholder="ex: Passer l'aspirateur"
-                  value={newTacheLabel}
-                  onChange={e => setNewTacheLabel(e.target.value)}
-                  required
-                />
-              </label>
-            </div>
-            <button type="submit" className="btn-add-semaine" disabled={saving || !newTacheLabel.trim()}>
               Ajouter
             </button>
           </form>
