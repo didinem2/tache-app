@@ -43,12 +43,14 @@ export default function Admin() {
 
   // ── Occurrences ───────────────────────────────────────────────────────────
 
-  function getEffectiveNathysOcc(s) {
-    return occEdits[s.id]?.nathys ?? s.nathysOccurrences ?? (s.elisaPresente ? 3 : 4)
+  function getNathysOcc(s, field) {
+    const def = s.nathysOccurrences ?? (s.elisaPresente ? 3 : 4)
+    return occEdits[s.id]?.[field] ?? s[field] ?? def
   }
 
-  function getEffectiveElisaOcc(s) {
-    return occEdits[s.id]?.elisa ?? s.elisaOccurrences ?? 4
+  function getElisaOcc(s, field) {
+    const def = s.elisaOccurrences ?? 4
+    return occEdits[s.id]?.[field] ?? s[field] ?? def
   }
 
   // Sauvegarde immédiate avec debounce 600ms — plus fiable que onBlur sur mobile
@@ -58,8 +60,7 @@ export default function Admin() {
     const key = `${s.id}-${field}`
     clearTimeout(saveTimeout.current[key])
     saveTimeout.current[key] = setTimeout(() => {
-      const fireField = field === 'nathys' ? 'nathysOccurrences' : 'elisaOccurrences'
-      updateSemaine(s.id, { [fireField]: val }).catch(err =>
+      updateSemaine(s.id, { [field]: val }).catch(err =>
         alert('Erreur sauvegarde : ' + err.message)
       )
     }, 600)
@@ -235,34 +236,45 @@ export default function Admin() {
                     </div>
 
                     <div className="admin-week-occurrences">
-                      <span className="admin-occ-user">🌸 Nathys</span>
-                      <input
-                        className="admin-occ-input"
-                        type="number"
-                        min="0"
-                        max="7"
-                        value={getEffectiveNathysOcc(s)}
-                        onChange={e => handleOccChange(s, 'nathys', e.target.value)}
-                      />
-                      <span className="admin-occ-unit">× / tâche</span>
+                      <div className="admin-occ-row">
+                        <span className="admin-occ-user">🌸 Nathys</span>
+                        <span className="admin-occ-task">Mettre table</span>
+                        <input
+                          className="admin-occ-input"
+                          type="number" min="0" max="7"
+                          value={getNathysOcc(s, 'nathysMettreTable')}
+                          onChange={e => handleOccChange(s, 'nathysMettreTable', e.target.value)}
+                        />
+                        <span className="admin-occ-sep">|</span>
+                        <span className="admin-occ-task">Débarrasser</span>
+                        <input
+                          className="admin-occ-input"
+                          type="number" min="0" max="7"
+                          value={getNathysOcc(s, 'nathysDebarrasserTable')}
+                          onChange={e => handleOccChange(s, 'nathysDebarrasserTable', e.target.value)}
+                        />
+                        <span className="admin-occ-unit">× / sem.</span>
+                      </div>
                       {s.elisaPresente && (
-                        <>
-                          <span className="admin-occ-sep">|</span>
+                        <div className="admin-occ-row">
                           <span className="admin-occ-user">⭐ Elisa</span>
+                          <span className="admin-occ-task">Mettre table</span>
                           <input
                             className="admin-occ-input"
-                            type="number"
-                            min="0"
-                            max="7"
-                            value={getEffectiveElisaOcc(s)}
-                            onChange={e => handleOccChange(s, 'elisa', e.target.value)}
+                            type="number" min="0" max="7"
+                            value={getElisaOcc(s, 'elisaMettreTable')}
+                            onChange={e => handleOccChange(s, 'elisaMettreTable', e.target.value)}
                           />
-                          <span className="admin-occ-unit">× / tâche</span>
-                        </>
-                      )}
-                      {(getEffectiveNathysOcc(s) === 0 ||
-                        (s.elisaPresente && getEffectiveElisaOcc(s) === 0)) && (
-                        <span className="admin-occ-hint">0 = semaine sans tâches</span>
+                          <span className="admin-occ-sep">|</span>
+                          <span className="admin-occ-task">Débarrasser</span>
+                          <input
+                            className="admin-occ-input"
+                            type="number" min="0" max="7"
+                            value={getElisaOcc(s, 'elisaDebarrasserTable')}
+                            onChange={e => handleOccChange(s, 'elisaDebarrasserTable', e.target.value)}
+                          />
+                          <span className="admin-occ-unit">× / sem.</span>
+                        </div>
                       )}
                     </div>
                   </div>

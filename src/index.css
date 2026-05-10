@@ -322,19 +322,25 @@ body {
   flex-wrap: wrap;
 }
 
-/* Ligne occurrences sous chaque semaine */
+/* Lignes occurrences sous chaque semaine */
 .admin-week-occurrences {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  flex-direction: column;
+  gap: 0.3rem;
   padding-top: 0.45rem;
   border-top: 1px solid var(--border);
   margin-top: 0.4rem;
   font-size: 0.82rem;
   color: var(--muted);
+}
+.admin-occ-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
-.admin-occ-user { font-weight: 600; color: var(--text); }
+.admin-occ-user { font-weight: 600; color: var(--text); min-width: 5rem; }
+.admin-occ-task { color: var(--text); }
 .admin-occ-unit { color: var(--muted); }
 .admin-occ-sep  { color: var(--border); margin: 0 0.2rem; font-size: 1rem; }
 .admin-occ-hint { margin-left: auto; font-style: italic; font-size: 0.78rem; color: #b45309; }

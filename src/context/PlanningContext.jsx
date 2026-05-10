@@ -77,23 +77,25 @@ export function PlanningProvider({ children }) {
 
   function tachesHebdoNathys(num) {
     const s = getSemaine(num)
-    const nb = s?.nathysOccurrences ?? (elisaPresente(num) ? 3 : 4)
-    if (nb === 0) return []
-    return [
-      { id: 'mettre_table',      label: TASK_IDS.mettre_table,      occurrences: nb },
-      { id: 'debarrasser_table', label: TASK_IDS.debarrasser_table, occurrences: nb },
-    ]
+    const def = s?.nathysOccurrences ?? (elisaPresente(num) ? 3 : 4)
+    const mt = s?.nathysMettreTable ?? def
+    const dt = s?.nathysDebarrasserTable ?? def
+    const tasks = []
+    if (mt > 0) tasks.push({ id: 'mettre_table',      label: TASK_IDS.mettre_table,      occurrences: mt })
+    if (dt > 0) tasks.push({ id: 'debarrasser_table', label: TASK_IDS.debarrasser_table, occurrences: dt })
+    return tasks
   }
 
   function tachesHebdoElisa(num) {
     if (!elisaPresente(num)) return []
     const s = getSemaine(num)
-    const nb = s?.elisaOccurrences ?? 4
-    if (nb === 0) return []
-    return [
-      { id: 'mettre_table',      label: TASK_IDS.mettre_table,      occurrences: nb },
-      { id: 'debarrasser_table', label: TASK_IDS.debarrasser_table, occurrences: nb },
-    ]
+    const def = s?.elisaOccurrences ?? 4
+    const mt = s?.elisaMettreTable ?? def
+    const dt = s?.elisaDebarrasserTable ?? def
+    const tasks = []
+    if (mt > 0) tasks.push({ id: 'mettre_table',      label: TASK_IDS.mettre_table,      occurrences: mt })
+    if (dt > 0) tasks.push({ id: 'debarrasser_table', label: TASK_IDS.debarrasser_table, occurrences: dt })
+    return tasks
   }
 
   function getSemaineMois(num) {
