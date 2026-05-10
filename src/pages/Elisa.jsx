@@ -11,10 +11,10 @@ export default function Elisa() {
   const navigate = useNavigate()
   const { history, loading: hLoading } = useHistory()
   const {
-    semaines, tachesMensuelles, loading: pLoading,
+    semaines, loading: pLoading,
     getSemaine, getSemaineMois, elisaPresente,
     tachesHebdoElisa, tachesHebdoNathys,
-    getNumsSemaines,
+    getNumsSemaines, getTachesMensuellesMois,
   } = usePlanning()
 
   if (hLoading || pLoading) return <div className="page-loading">Chargement…</div>
@@ -65,7 +65,7 @@ export default function Elisa() {
         history.some(h => h.user === USER && h.week === w && h.task === t.id && h.occurrence === occ && h.type === 'hebdo' && h.completed)
       )
     )
-  ) && tachesMensuelles.every(t =>
+  ) && getTachesMensuellesMois(mois, annee).every(t =>
     history.some(h => h.user === USER && h.task === t.id && h.type === 'mensuel' && h.mois === mois && h.annee === annee && h.completed)
   )
 

@@ -152,20 +152,25 @@ export function PlanningProvider({ children }) {
     await batch.commit()
   }
 
-  // ── Tâches mensuelles CRUD ────────────────────────────────────────────────
+  // ── Tâches mensuelles ─────────────────────────────────────────────────────
 
-  async function addTacheMensuelle(label) {
-    await addDoc(collection(db, 'tachesMensuelles'), { label })
+  function getTachesMensuellesMois(mois, annee) {
+    return tachesMensuelles.filter(t => t.mois === mois && t.annee === annee)
+  }
+
+  async function addTacheMensuelle(label, mois, annee) {
+    await addDoc(collection(db, 'tachesMensuelles'), { label, mois, annee })
   }
 
   async function deleteTacheMensuelle(id) {
     await deleteDoc(doc(db, 'tachesMensuelles', id))
   }
 
-  async function seedTachesMensuelles() {
+  async function seedTachesMensuelles(mois, annee) {
+    if (getTachesMensuellesMois(mois, annee).length > 0) return
     const batch = writeBatch(db)
     SEED_TACHES_MENSUELLES.forEach(t => {
-      batch.set(doc(db, 'tachesMensuelles', t.id), { label: t.label })
+      batch.set(doc(collection(db, 'tachesMensuelles')), { label: t.label, mois, annee })
     })
     await batch.commit()
   }
@@ -191,6 +196,7 @@ export function PlanningProvider({ children }) {
       getSemaine, elisaPresente,
       tachesHebdoNathys, tachesHebdoElisa,
       getSemaineMois, getMoisPlanning, getWeeksForMonth, getNumsSemaines,
+      getTachesMensuellesMois,
       isMonthArchived, archiveMonth, unarchiveMonth,
       addSemaine, updateSemaine, deleteSemaine, seedSemaines,
       addTacheMensuelle, deleteTacheMensuelle, seedTachesMensuelles,

@@ -43,8 +43,9 @@ export default function Parents() {
   const navigate = useNavigate()
   const { history, loading: hLoading, isArgentDonne, getArgentDonneLe, toggleArgentDonne } = useHistory()
   const {
-    tachesMensuelles, loading: pLoading,
+    loading: pLoading,
     getMoisPlanning, getWeeksForMonth, tachesHebdoNathys, tachesHebdoElisa, elisaPresente,
+    getTachesMensuellesMois,
   } = usePlanning()
   const [moisIdx, setMoisIdx] = useState(0)
 
@@ -74,7 +75,8 @@ export default function Parents() {
   const { mois, annee } = moisPlanning[idx]
   const weeksForMonth = getWeeksForMonth(mois, annee)
   const moisLabel = moisSuivantLabel(mois, annee)
-  const moisMensuel = tachesMensuelles.length
+  const tachesMois = getTachesMensuellesMois(mois, annee)
+  const moisMensuel = tachesMois.length
 
   const nathysArgent = isArgentDonne('nathys', mois, annee)
   const elisaArgent = isArgentDonne('elisa', mois, annee)
@@ -137,7 +139,7 @@ export default function Parents() {
           </div>
 
           <p className="mensuel-line">
-            Tâches mensuelles : <strong>{countMensuelDone(history, 'nathys', mois, annee, tachesMensuelles)} / {moisMensuel}</strong>
+            Tâches mensuelles : <strong>{countMensuelDone(history, 'nathys', mois, annee, tachesMois)} / {moisMensuel}</strong>
           </p>
 
           <label className="argent-label">
@@ -189,7 +191,7 @@ export default function Parents() {
           </div>
 
           <p className="mensuel-line">
-            Tâches mensuelles : <strong>{countMensuelDone(history, 'elisa', mois, annee, tachesMensuelles)} / {moisMensuel}</strong>
+            Tâches mensuelles : <strong>{countMensuelDone(history, 'elisa', mois, annee, tachesMois)} / {moisMensuel}</strong>
           </p>
 
           <label className="argent-label">

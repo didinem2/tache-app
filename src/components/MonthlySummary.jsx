@@ -3,7 +3,8 @@ import { usePlanning } from '../context/PlanningContext.jsx'
 
 export default function MonthlySummary({ user, mois, annee }) {
   const { isMensuelChecked, toggleMensuel } = useHistory()
-  const { tachesMensuelles } = usePlanning()
+  const { getTachesMensuellesMois } = usePlanning()
+  const tachesMensuelles = getTachesMensuellesMois(mois, annee)
 
   const total = tachesMensuelles.length
   const done = tachesMensuelles.filter(t => isMensuelChecked(user, t.id, mois, annee)).length

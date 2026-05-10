@@ -17,8 +17,9 @@ const FORM_EMPTY = {
 export default function Admin() {
   const navigate = useNavigate()
   const {
-    semaines, tachesMensuelles, loading,
+    semaines, loading,
     getMoisPlanning, isMonthArchived, archiveMonth, unarchiveMonth,
+    getTachesMensuellesMois,
     addSemaine, updateSemaine, deleteSemaine, seedSemaines,
     addTacheMensuelle, deleteTacheMensuelle, seedTachesMensuelles,
   } = usePlanning()
@@ -125,7 +126,7 @@ export default function Admin() {
     if (!label) return
     setSaving(true)
     try {
-      await addTacheMensuelle(label)
+      await addTacheMensuelle(label, mois, annee)
       setNewTacheByMois(prev => ({ ...prev, [key]: '' }))
     } catch (err) {
       alert('Erreur : ' + err.message)
@@ -143,9 +144,9 @@ export default function Admin() {
     }
   }
 
-  async function handleSeedTaches() {
+  async function handleSeedTaches(mois, annee) {
     setSaving(true)
-    try { await seedTachesMensuelles() }
+    try { await seedTachesMensuelles(mois, annee) }
     catch (err) { alert('Erreur : ' + err.message) }
     finally { setSaving(false) }
   }
@@ -197,6 +198,7 @@ export default function Admin() {
           const archived = isMonthArchived(mois, annee)
           const key = moisKey(mois, annee)
           const newLabel = newTacheByMois[key] ?? ''
+          const tachesMois = getTachesMensuellesMois(mois, annee)
 
           return (
             <section key={key} className={`admin-month ${archived ? 'admin-month-archived' : ''}`}>
@@ -285,16 +287,16 @@ export default function Admin() {
               <div className="admin-mensuel-block">
                 <div className="admin-mensuel-title">📅 Tâches mensuelles</div>
 
-                {tachesMensuelles.length === 0 ? (
+                {tachesMois.length === 0 ? (
                   <div className="admin-mensuel-empty">
                     <p>Aucune tâche mensuelle.</p>
-                    <button className="btn-seed" onClick={handleSeedTaches} disabled={saving}>
+                    <button className="btn-seed" onClick={() => handleSeedTaches(mois, annee)} disabled={saving}>
                       Initialiser les 4 tâches par défaut
                     </button>
                   </div>
                 ) : (
                   <div className="admin-mensuel-list">
-                    {tachesMensuelles.map(t => (
+                    {tachesMois.map(t => (
                       <div key={t.id} className="admin-mensuel-row">
                         <span className="admin-mensuel-label">{t.label}</span>
                         <button
