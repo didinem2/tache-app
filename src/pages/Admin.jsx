@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PinGate from '../components/PinGate.jsx'
 import { usePlanning } from '../context/PlanningContext.jsx'
@@ -31,6 +31,7 @@ export default function Admin() {
   // Formulaire d'ajout par mois : { '5-2026': 'label en cours', ... }
   const [newTacheByMois, setNewTacheByMois] = useState({})
   const [showArchived, setShowArchived] = useState(false)
+  const saveTimeout = useRef({})
 
   if (loading) return <div className="page-loading">Chargement…</div>
 
@@ -50,28 +51,18 @@ export default function Admin() {
     return occEdits[s.id]?.elisa ?? s.elisaOccurrences ?? 4
   }
 
-  function handleNathysOccChange(s, val) {
-    setOccEdits(prev => ({ ...prev, [s.id]: { ...prev[s.id], nathys: Number(val) } }))
-  }
-
-  function handleElisaOccChange(s, val) {
-    setOccEdits(prev => ({ ...prev, [s.id]: { ...prev[s.id], elisa: Number(val) } }))
-  }
-
-  async function handleOccBlur(s) {
-    const edit = occEdits[s.id]
-    if (!edit) return
-    const updates = {}
-    if (edit.nathys !== undefined) updates.nathysOccurrences = edit.nathys
-    if (edit.elisa !== undefined) updates.elisaOccurrences = edit.elisa
-    if (Object.keys(updates).length > 0) {
-      try {
-        await updateSemaine(s.id, updates)
-      } catch (err) {
-        alert('Erreur lors de la sauvegarde : ' + err.message)
-      }
-    }
-    setOccEdits(prev => { const next = { ...prev }; delete next[s.id]; return next })
+  // Sauvegarde immédiate avec debounce 600ms — plus fiable que onBlur sur mobile
+  function handleOccChange(s, field, rawVal) {
+    const val = Number(rawVal)
+    setOccEdits(prev => ({ ...prev, [s.id]: { ...prev[s.id], [field]: val } }))
+    const key = `${s.id}-${field}`
+    clearTimeout(saveTimeout.current[key])
+    saveTimeout.current[key] = setTimeout(() => {
+      const fireField = field === 'nathys' ? 'nathysOccurrences' : 'elisaOccurrences'
+      updateSemaine(s.id, { [fireField]: val }).catch(err =>
+        alert('Erreur sauvegarde : ' + err.message)
+      )
+    }, 600)
   }
 
   // ── Semaines CRUD ─────────────────────────────────────────────────────────
@@ -251,8 +242,7 @@ export default function Admin() {
                         min="0"
                         max="7"
                         value={getEffectiveNathysOcc(s)}
-                        onChange={e => handleNathysOccChange(s, e.target.value)}
-                        onBlur={() => handleOccBlur(s)}
+                        onChange={e => handleOccChange(s, 'nathys', e.target.value)}
                       />
                       <span className="admin-occ-unit">× / tâche</span>
                       {s.elisaPresente && (
@@ -265,8 +255,7 @@ export default function Admin() {
                             min="0"
                             max="7"
                             value={getEffectiveElisaOcc(s)}
-                            onChange={e => handleElisaOccChange(s, e.target.value)}
-                            onBlur={() => handleOccBlur(s)}
+                            onChange={e => handleOccChange(s, 'elisa', e.target.value)}
                           />
                           <span className="admin-occ-unit">× / tâche</span>
                         </>
