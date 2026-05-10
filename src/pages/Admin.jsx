@@ -73,15 +73,20 @@ export default function Admin() {
       return
     }
     setSaving(true)
-    await addSemaine({
-      num,
-      label: form.label,
-      mois: Number(form.mois),
-      annee: Number(form.annee),
-      elisaPresente: form.elisaPresente,
-    })
-    setForm(FORM_EMPTY)
-    setSaving(false)
+    try {
+      await addSemaine({
+        num,
+        label: form.label,
+        mois: Number(form.mois),
+        annee: Number(form.annee),
+        elisaPresente: form.elisaPresente,
+      })
+      setForm(FORM_EMPTY)
+    } catch (err) {
+      alert('Erreur lors de l\'ajout : ' + err.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function handleToggleElisa(s) {
@@ -99,8 +104,13 @@ export default function Admin() {
 
   async function handleSeed() {
     setSaving(true)
-    await seedSemaines()
-    setSaving(false)
+    try {
+      await seedSemaines()
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   // ── Tâches mensuelles CRUD ────────────────────────────────────────────────
@@ -110,9 +120,14 @@ export default function Admin() {
     const label = newTacheLabel.trim()
     if (!label) return
     setSaving(true)
-    await addTacheMensuelle(label)
-    setNewTacheLabel('')
-    setSaving(false)
+    try {
+      await addTacheMensuelle(label)
+      setNewTacheLabel('')
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function handleDeleteTache(t) {
@@ -126,8 +141,13 @@ export default function Admin() {
 
   async function handleSeedTaches() {
     setSaving(true)
-    await seedTachesMensuelles()
-    setSaving(false)
+    try {
+      await seedTachesMensuelles()
+    } catch (err) {
+      alert('Erreur : ' + err.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
