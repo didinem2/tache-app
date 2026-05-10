@@ -7,8 +7,18 @@ import { useHistory } from '../context/HistoryContext.jsx'
 import { usePlanning } from '../context/PlanningContext.jsx'
 import { MOIS_NOMS, moisSuivantLabel } from '../data/planning.js'
 
-function countHebdoDone(history, user, week) {
-  return history.filter(h => h.user === user && h.week === week && h.type === 'hebdo').length
+// Compte uniquement les occurrences effectivement attendues selon le planning admin
+function countHebdoDone(history, user, week, taches) {
+  let done = 0
+  taches.forEach(t => {
+    for (let occ = 1; occ <= t.occurrences; occ++) {
+      if (history.some(h =>
+        h.user === user && h.week === week && h.task === t.id &&
+        h.occurrence === occ && h.type === 'hebdo' && h.completed
+      )) done++
+    }
+  })
+  return done
 }
 
 function countMensuelDone(history, user, mois, annee, tachesMensuelles) {
@@ -73,11 +83,6 @@ export default function Parents() {
 
   const elisaWeeks = weeksForMonth.filter(w => elisaPresente(w))
 
-  function expectedHebdo(user, week) {
-    const taches = user === 'nathys' ? tachesHebdoNathys(week) : tachesHebdoElisa(week)
-    return taches.reduce((acc, t) => acc + t.occurrences, 0)
-  }
-
   return (
     <PinGate user="parents">
       <div className="page page-parents">
@@ -115,8 +120,9 @@ export default function Parents() {
                   <tr><td colSpan={2} className="absent">Aucune semaine ce mois</td></tr>
                 )}
                 {weeksForMonth.map(week => {
-                  const done = countHebdoDone(history, 'nathys', week)
-                  const exp = expectedHebdo('nathys', week)
+                  const taches = tachesHebdoNathys(week)
+                  const exp = taches.reduce((acc, t) => acc + t.occurrences, 0)
+                  const done = countHebdoDone(history, 'nathys', week, taches)
                   return (
                     <tr key={week}>
                       <td><strong>S{week}</strong></td>
@@ -166,8 +172,9 @@ export default function Parents() {
                   <tr><td colSpan={2} className="absent">Absente ce mois</td></tr>
                 )}
                 {elisaWeeks.map(week => {
-                  const done = countHebdoDone(history, 'elisa', week)
-                  const exp = expectedHebdo('elisa', week)
+                  const taches = tachesHebdoElisa(week)
+                  const exp = taches.reduce((acc, t) => acc + t.occurrences, 0)
+                  const done = countHebdoDone(history, 'elisa', week, taches)
                   return (
                     <tr key={week}>
                       <td><strong>S{week}</strong></td>

@@ -18,7 +18,6 @@ export const SEED_SEMAINES = [
   { num: 27, label: '29 juin – 5 juil. 2026', mois: 6, annee: 2026, elisaPresente: true  },
 ]
 
-// IDs fixes pour correspondre aux enregistrements history existants
 const SEED_TACHES_MENSUELLES = [
   { id: 'salle_de_bain',  label: 'Nettoyer la salle de bain' },
   { id: 'chambre',        label: 'Nettoyer sa chambre' },
@@ -32,6 +31,7 @@ export function PlanningProvider({ children }) {
   const [semaines, setSemaines] = useState([])
   const [loadingSemaines, setLoadingSemaines] = useState(true)
   const [tachesMensuelles, setTachesMensuelles] = useState([])
+  const [archivedMonths, setArchivedMonths] = useState([])
 
   const loading = loadingSemaines
 
@@ -54,6 +54,19 @@ export function PlanningProvider({ children }) {
     return unsub
   }, [])
 
+  useEffect(() => {
+    const unsub = onSnapshot(
+      doc(db, 'config', 'planning'),
+      snapshot => {
+        if (snapshot.exists()) {
+          setArchivedMonths(snapshot.data().archivedMonths ?? [])
+        }
+      },
+      _err => {},
+    )
+    return unsub
+  }, [])
+
   function getSemaine(num) {
     return semaines.find(s => s.num === num)
   }
@@ -64,7 +77,6 @@ export function PlanningProvider({ children }) {
 
   function tachesHebdoNathys(num) {
     const s = getSemaine(num)
-    // nathysOccurrences stocké explicitement, sinon règle par défaut (3 si Elisa présente, 4 sinon)
     const nb = s?.nathysOccurrences ?? (elisaPresente(num) ? 3 : 4)
     if (nb === 0) return []
     return [
@@ -112,6 +124,10 @@ export function PlanningProvider({ children }) {
     return semaines.map(s => s.num)
   }
 
+  function isMonthArchived(mois, annee) {
+    return archivedMonths.includes(`${mois}-${annee}`)
+  }
+
   // ── Semaines CRUD ─────────────────────────────────────────────────────────
 
   async function addSemaine(data) {
@@ -144,8 +160,6 @@ export function PlanningProvider({ children }) {
     await deleteDoc(doc(db, 'tachesMensuelles', id))
   }
 
-  // Initialise avec les 4 tâches par défaut en conservant les IDs fixes
-  // pour la compatibilité avec l'historique existant
   async function seedTachesMensuelles() {
     const batch = writeBatch(db)
     SEED_TACHES_MENSUELLES.forEach(t => {
@@ -154,12 +168,28 @@ export function PlanningProvider({ children }) {
     await batch.commit()
   }
 
+  // ── Archivage des mois ────────────────────────────────────────────────────
+
+  async function archiveMonth(mois, annee) {
+    const key = `${mois}-${annee}`
+    const next = archivedMonths.includes(key) ? archivedMonths : [...archivedMonths, key]
+    await setDoc(doc(db, 'config', 'planning'), { archivedMonths: next }, { merge: true })
+  }
+
+  async function unarchiveMonth(mois, annee) {
+    const key = `${mois}-${annee}`
+    await setDoc(doc(db, 'config', 'planning'), {
+      archivedMonths: archivedMonths.filter(k => k !== key),
+    }, { merge: true })
+  }
+
   return (
     <PlanningContext.Provider value={{
-      semaines, tachesMensuelles, loading,
+      semaines, tachesMensuelles, archivedMonths, loading,
       getSemaine, elisaPresente,
       tachesHebdoNathys, tachesHebdoElisa,
       getSemaineMois, getMoisPlanning, getWeeksForMonth, getNumsSemaines,
+      isMonthArchived, archiveMonth, unarchiveMonth,
       addSemaine, updateSemaine, deleteSemaine, seedSemaines,
       addTacheMensuelle, deleteTacheMensuelle, seedTachesMensuelles,
     }}>
