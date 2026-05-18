@@ -43,6 +43,14 @@ export function HistoryProvider({ children }) {
     )
   }
 
+  function getMensuelCompletedAt(user, taskId, mois, annee) {
+    const entry = history.find(h =>
+      h.user === user && h.task === taskId && h.type === 'mensuel' &&
+      h.mois === mois && h.annee === annee && h.completed
+    )
+    return entry?.completedAt ?? null
+  }
+
   // ── Écritures (Firestore) ────────────────────────────────────────────────
 
   async function toggleHebdo(user, week, taskId, occurrence, checked) {
@@ -128,7 +136,7 @@ export function HistoryProvider({ children }) {
   return (
     <HistoryContext.Provider value={{
       history, loading,
-      isHebdoChecked, getHebdoCompletedAt, isMensuelChecked,
+      isHebdoChecked, getHebdoCompletedAt, isMensuelChecked, getMensuelCompletedAt,
       toggleHebdo, toggleMensuel,
       clearWeek, clearUser,
       isArgentDonne, getArgentDonneLe, toggleArgentDonne,

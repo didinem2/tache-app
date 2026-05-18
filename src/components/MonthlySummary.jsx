@@ -2,7 +2,17 @@ import { useHistory } from '../context/HistoryContext.jsx'
 import { usePlanning } from '../context/PlanningContext.jsx'
 
 export default function MonthlySummary({ user, mois, annee }) {
-  const { isMensuelChecked, toggleMensuel } = useHistory()
+  const { isMensuelChecked, getMensuelCompletedAt, toggleMensuel } = useHistory()
+
+  function fmt(iso) {
+    if (!iso) return null
+    const d = new Date(iso)
+    const day = String(d.getDate()).padStart(2, '0')
+    const mon = String(d.getMonth() + 1).padStart(2, '0')
+    const h   = String(d.getHours()).padStart(2, '0')
+    const min = String(d.getMinutes()).padStart(2, '0')
+    return `${day}/${mon} à ${h}:${min}`
+  }
   const { getTachesMensuellesMois } = usePlanning()
   const tachesMensuelles = getTachesMensuellesMois(mois, annee)
 
@@ -26,6 +36,7 @@ export default function MonthlySummary({ user, mois, annee }) {
           <p className="admin-occ-hint">Aucune tâche mensuelle configurée.</p>
         ) : tachesMensuelles.map(tache => {
           const checked = isMensuelChecked(user, tache.id, mois, annee)
+          const completedAt = getMensuelCompletedAt(user, tache.id, mois, annee)
           return (
             <label key={tache.id} className={`checkbox-row ${checked ? 'checked' : ''}`}>
               <input
@@ -34,6 +45,9 @@ export default function MonthlySummary({ user, mois, annee }) {
                 onChange={e => toggleMensuel(user, tache.id, e.target.checked, mois, annee)}
               />
               <span>{tache.label}</span>
+              {checked && completedAt && (
+                <span className="checkbox-date">{fmt(completedAt)}</span>
+              )}
             </label>
           )
         })}
