@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { TASK_IDS } from '../data/planning.js'
+import { usePlanning } from '../context/PlanningContext.jsx'
 
 export default function HistoryTable({ history }) {
+  const { tachesMensuelles } = usePlanning()
+  const mensuelLabels = Object.fromEntries(tachesMensuelles.map(t => [t.id, t.label]))
   const [filterUser, setFilterUser] = useState('tous')
   const [filterWeek, setFilterWeek] = useState('toutes')
   const [filterTask, setFilterTask] = useState('toutes')
@@ -73,7 +76,7 @@ export default function HistoryTable({ history }) {
                     {h.user === 'nathys' ? 'Nathys' : 'Elisa'}
                   </td>
                   <td>{h.week ? `S${h.week}` : `${h.mois}/${h.annee}`}</td>
-                  <td>{h.type === 'argent_donne' ? 'Argent de poche' : (TASK_IDS[h.task] ?? h.task)}</td>
+                  <td>{h.type === 'argent_donne' ? 'Argent de poche' : (TASK_IDS[h.task] ?? mensuelLabels[h.task] ?? h.task)}</td>
                   <td>{h.occurrence ?? '—'}</td>
                   <td>{new Date(h.completedAt ?? h.donneLe).toLocaleString('fr-FR')}</td>
                 </tr>
