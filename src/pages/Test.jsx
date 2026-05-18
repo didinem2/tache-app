@@ -56,11 +56,11 @@ function checkToutValide(history, tachesMois, mois, annee) {
 
 export default function Test() {
   const navigate = useNavigate()
-  const { history, loading: hLoading, clearWeek, clearUser } = useHistory()
-  const { getTachesMensuellesMois, loading: pLoading } = usePlanning()
+  const { history, loading, clearWeek, clearUser } = useHistory()
+  const { getTachesMensuellesMois } = usePlanning()
   const [week, setWeek] = useState(TEST_SEMAINES[0])
 
-  if (hLoading || pLoading) return <div className="page-loading">Chargement…</div>
+  if (loading) return <div className="page-loading">Chargement…</div>
 
   const mois = getMonth(new Date()) + 1
   const annee = getYear(new Date())

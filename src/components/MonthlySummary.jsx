@@ -1,18 +1,18 @@
 import { useHistory } from '../context/HistoryContext.jsx'
 import { usePlanning } from '../context/PlanningContext.jsx'
 
+function fmt(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  const day = String(d.getDate()).padStart(2, '0')
+  const mon = String(d.getMonth() + 1).padStart(2, '0')
+  const hr  = String(d.getHours()).padStart(2, '0')
+  const min = String(d.getMinutes()).padStart(2, '0')
+  return `${day}/${mon} à ${hr}:${min}`
+}
+
 export default function MonthlySummary({ user, mois, annee }) {
   const { isMensuelChecked, getMensuelCompletedAt, toggleMensuel } = useHistory()
-
-  function fmt(iso) {
-    if (!iso) return null
-    const d = new Date(iso)
-    const day = String(d.getDate()).padStart(2, '0')
-    const mon = String(d.getMonth() + 1).padStart(2, '0')
-    const h   = String(d.getHours()).padStart(2, '0')
-    const min = String(d.getMinutes()).padStart(2, '0')
-    return `${day}/${mon} à ${h}:${min}`
-  }
   const { getTachesMensuellesMois } = usePlanning()
   const tachesMensuelles = getTachesMensuellesMois(mois, annee)
 
