@@ -4,7 +4,8 @@ import { getMonth, getYear } from 'date-fns'
 import TaskList from '../components/TaskList.jsx'
 import MonthlySummary from '../components/MonthlySummary.jsx'
 import { useHistory } from '../context/HistoryContext.jsx'
-import { tachesHebdoTest, TEST_SEMAINES, TEST_CALENDRIER, TACHES_MENSUELLES } from '../data/planning.js'
+import { tachesHebdoTest, TEST_SEMAINES, TEST_CALENDRIER } from '../data/planning.js'
+import { usePlanning } from '../context/PlanningContext.jsx'
 
 const USER = 'test'
 
@@ -39,7 +40,7 @@ function computeProgress(history, week, carryover) {
   return { done, total }
 }
 
-function checkToutValide(history) {
+function checkToutValide(history, tachesMois, mois, annee) {
   const semainsDone = TEST_SEMAINES.every(week =>
     tachesHebdoTest(week).every(t =>
       Array.from({ length: t.occurrences }, (_, i) => i + 1).every(occ =>
@@ -47,9 +48,7 @@ function checkToutValide(history) {
       )
     )
   )
-  const mois = getMonth(new Date()) + 1
-  const annee = getYear(new Date())
-  const mensuelDone = TACHES_MENSUELLES.every(t =>
+  const mensuelDone = tachesMois.every(t =>
     history.some(h => h.user === USER && h.task === t.id && h.type === 'mensuel' && h.mois === mois && h.annee === annee && h.completed)
   )
   return semainsDone && mensuelDone
@@ -57,10 +56,15 @@ function checkToutValide(history) {
 
 export default function Test() {
   const navigate = useNavigate()
-  const { history, loading, clearWeek, clearUser } = useHistory()
+  const { history, loading: hLoading, clearWeek, clearUser } = useHistory()
+  const { getTachesMensuellesMois, loading: pLoading } = usePlanning()
   const [week, setWeek] = useState(TEST_SEMAINES[0])
 
-  if (loading) return <div className="page-loading">Chargement…</div>
+  if (hLoading || pLoading) return <div className="page-loading">Chargement…</div>
+
+  const mois = getMonth(new Date()) + 1
+  const annee = getYear(new Date())
+  const tachesMois = getTachesMensuellesMois(mois, annee)
 
   const weekIdx = TEST_SEMAINES.indexOf(week)
   const taches = tachesHebdoTest(week)
@@ -68,7 +72,7 @@ export default function Test() {
   const { done, total } = computeProgress(history, week, carryover)
   const semaineComplete = total > 0 && done >= total
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
-  const toutValide = checkToutValide(history)
+  const toutValide = checkToutValide(history, tachesMois, mois, annee)
 
   return (
     <div className="page page-test">
@@ -122,7 +126,7 @@ export default function Test() {
         </div>
       )}
 
-      <MonthlySummary user={USER} />
+      <MonthlySummary user={USER} mois={mois} annee={annee} />
       <TaskList user={USER} week={week} tachesHebdo={taches} carryoverItems={carryover} />
     </div>
   )
