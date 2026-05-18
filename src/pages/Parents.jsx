@@ -159,7 +159,7 @@ export default function Parents() {
 
         {/* ── Elisa ── */}
         <section className="recap-section">
-          <h3 className="section-title">⭐ Elisa — {MOIS_NOMS[mois]} {annee}</h3>
+          <h3 className="section-title">🦋 Elisa — {MOIS_NOMS[mois]} {annee}</h3>
 
           <div className="table-scroll">
             <table className="summary-table">

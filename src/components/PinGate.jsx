@@ -8,7 +8,7 @@ const PINS = {
 
 const LABELS = {
   nathys: { emoji: '🌸', nom: 'Nathys' },
-  elisa: { emoji: '⭐', nom: 'Elisa' },
+  elisa: { emoji: '🦋', nom: 'Elisa' },
   parents: { emoji: '👁️', nom: 'Compte surveillance' },
 }
 

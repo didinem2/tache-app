@@ -20,7 +20,7 @@ export default function Home() {
         </button>
 
         <button className="home-btn btn-elisa" onClick={() => navigate('/elisa')}>
-          <span className="btn-emoji">⭐</span>
+          <span className="btn-emoji">🦋</span>
           <span className="btn-name">Elisa</span>
         </button>
 

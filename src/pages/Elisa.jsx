@@ -76,7 +76,7 @@ export default function Elisa() {
       <div className="page page-elisa">
         <header className="page-header">
           <button className="back-btn" onClick={() => navigate('/')}>← Retour</button>
-          <h2>⭐ Elisa</h2>
+          <h2>🦋 Elisa</h2>
         </header>
 
         <div className="week-display">

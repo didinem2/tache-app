@@ -227,7 +227,7 @@ export default function Admin() {
                         className={`admin-elisa-toggle ${s.elisaPresente ? 'present' : 'absent'}`}
                         onClick={() => handleToggleElisa(s)}
                       >
-                        {s.elisaPresente ? '⭐ Elisa présente' : '— Elisa absente'}
+                        {s.elisaPresente ? '🦋 Elisa présente' : '— Elisa absente'}
                       </button>
                       <button
                         className={`admin-del-btn ${confirm === s.id ? 'confirm' : ''}`}
@@ -259,7 +259,7 @@ export default function Admin() {
                       </div>
                       {s.elisaPresente && (
                         <div className="admin-occ-row">
-                          <span className="admin-occ-user">⭐ Elisa</span>
+                          <span className="admin-occ-user">🦋 Elisa</span>
                           <span className="admin-occ-task">Mettre table</span>
                           <input
                             className="admin-occ-input"
