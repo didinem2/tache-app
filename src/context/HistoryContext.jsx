@@ -28,6 +28,14 @@ export function HistoryProvider({ children }) {
     )
   }
 
+  function getHebdoCompletedAt(user, week, taskId, occurrence) {
+    const entry = history.find(h =>
+      h.user === user && h.week === week && h.task === taskId &&
+      h.occurrence === occurrence && h.type === 'hebdo' && h.completed
+    )
+    return entry?.completedAt ?? null
+  }
+
   function isMensuelChecked(user, taskId, mois, annee) {
     return history.some(h =>
       h.user === user && h.task === taskId && h.type === 'mensuel' &&
@@ -120,7 +128,7 @@ export function HistoryProvider({ children }) {
   return (
     <HistoryContext.Provider value={{
       history, loading,
-      isHebdoChecked, isMensuelChecked,
+      isHebdoChecked, getHebdoCompletedAt, isMensuelChecked,
       toggleHebdo, toggleMensuel,
       clearWeek, clearUser,
       isArgentDonne, getArgentDonneLe, toggleArgentDonne,

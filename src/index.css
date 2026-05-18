@@ -164,6 +164,7 @@ body {
 }
 .checkbox-row:hover { background: #f1f5f9; }
 .checkbox-row.checked { color: var(--muted); text-decoration: line-through; }
+.checkbox-date { margin-left: auto; font-size: 0.75rem; color: var(--muted); font-style: italic; text-decoration: none; white-space: nowrap; }
 .checkbox-row input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--nathys); cursor: pointer; }
 .page-elisa .checkbox-row input[type="checkbox"] { accent-color: var(--elisa); }
 

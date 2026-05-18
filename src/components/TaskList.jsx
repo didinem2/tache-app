@@ -1,10 +1,23 @@
 import { useHistory } from '../context/HistoryContext.jsx'
 
-function CheckboxRow({ label, checked, onChange }) {
+function fmt(iso) {
+  if (!iso) return null
+  const d = new Date(iso)
+  const day  = String(d.getDate()).padStart(2, '0')
+  const mon  = String(d.getMonth() + 1).padStart(2, '0')
+  const h    = String(d.getHours()).padStart(2, '0')
+  const min  = String(d.getMinutes()).padStart(2, '0')
+  return `${day}/${mon} à ${h}:${min}`
+}
+
+function CheckboxRow({ label, checked, completedAt, onChange }) {
   return (
     <label className={`checkbox-row ${checked ? 'checked' : ''}`}>
       <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
       <span>{label}</span>
+      {checked && completedAt && (
+        <span className="checkbox-date">{fmt(completedAt)}</span>
+      )}
     </label>
   )
 }
@@ -19,7 +32,7 @@ function groupCarryover(items) {
 }
 
 export default function TaskList({ user, week, tachesHebdo, carryoverItems = [] }) {
-  const { isHebdoChecked, toggleHebdo } = useHistory()
+  const { isHebdoChecked, getHebdoCompletedAt, toggleHebdo } = useHistory()
 
   return (
     <div className="task-list">
@@ -35,6 +48,7 @@ export default function TaskList({ user, week, tachesHebdo, carryoverItems = [] 
                     key={occ}
                     label={`Fois ${occ}`}
                     checked={isHebdoChecked(user, week, tache.id, occ)}
+                    completedAt={getHebdoCompletedAt(user, week, tache.id, occ)}
                     onChange={val => toggleHebdo(user, week, tache.id, occ, val)}
                   />
                 ))}
@@ -62,6 +76,7 @@ export default function TaskList({ user, week, tachesHebdo, carryoverItems = [] 
                     key={`${item.week}-${item.occurrence}`}
                     label={`Report S${item.week}`}
                     checked={isHebdoChecked(user, item.week, item.taskId, item.occurrence)}
+                    completedAt={getHebdoCompletedAt(user, item.week, item.taskId, item.occurrence)}
                     onChange={val => toggleHebdo(user, item.week, item.taskId, item.occurrence, val)}
                   />
                 ))}
